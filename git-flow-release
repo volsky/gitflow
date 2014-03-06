@@ -276,6 +276,21 @@ cmd_finish() {
 		fi
 	fi
 
+	if flag push; then
+		git_do push "$ORIGIN" "$DEVELOP_BRANCH" || \
+			die "Could not push to $DEVELOP_BRANCH from $ORIGIN."
+		git_do push "$ORIGIN" "$MASTER_BRANCH" || \
+			die "Could not push to $MASTER_BRANCH from $ORIGIN."
+		git_do push "$ORIGIN" "$BRANCH" || \
+                        die "Could not push to $BRANCH from $ORIGIN."
+		if noflag notag; then
+			git_do push --tags "$ORIGIN" || \
+			  die "Could not push tags to $ORIGIN."
+		fi
+		#git_do push "$ORIGIN" :"$BRANCH" || \
+		#	die "Could not delete the remote $BRANCH in $ORIGIN."
+	fi
+
 	# delete branch
 	if noflag keep; then
 		if [ "$BRANCH" = "$(git_current_branch)" ]; then
@@ -283,20 +298,7 @@ cmd_finish() {
 		fi
 		git_do branch -d "$BRANCH"
 	fi
-
-	if flag push; then
-		git_do push "$ORIGIN" "$DEVELOP_BRANCH" || \
-			die "Could not push to $DEVELOP_BRANCH from $ORIGIN."
-		git_do push "$ORIGIN" "$MASTER_BRANCH" || \
-			die "Could not push to $MASTER_BRANCH from $ORIGIN."
-		if noflag notag; then
-			git_do push --tags "$ORIGIN" || \
-			  die "Could not push tags to $ORIGIN."
-		fi
-		git_do push "$ORIGIN" :"$BRANCH" || \
-			die "Could not delete the remote $BRANCH in $ORIGIN."
-	fi
-
+	
 	echo
 	echo "Summary of actions:"
 	echo "- Latest objects have been fetched from '$ORIGIN'"
